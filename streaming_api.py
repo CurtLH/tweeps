@@ -32,12 +32,10 @@ class MyListener(StreamListener):
     
     def on_data(self, data):
         try:
-            tweet = parse_tweet(data)
-            content = extract_content(tweet)
-            with open('tweets.csv', 'a') as f: 
-                writer = csv.writer(f, quotechar = '"')
-                writer.writerow(content)
-                #logger.info(content[3])
+            tweet = json.loads(data)
+            with open('tweets.json', 'a') as f: 
+                json.dump(tweet, f)
+                f.write('\n')
 
         except BaseException as e:
             logger.warning(e)
@@ -47,38 +45,6 @@ class MyListener(StreamListener):
     def on_error(self, status):
         logger.warning(status)
         return True
-
-
-# parse data
-def parse_tweet(data):
-    
-    # load JSON item into a dict
-    tweet = json.loads(data)
-    
-    # check if tweet is valid
-    if 'user' in tweet.keys():  
-        tweet['CREATED_AT'] = parser.parse(tweet['created_at'])
-        if 'retweeted_status' in tweet:
-            tweet['TWEET_TYPE'] = 'retweet'
-        elif len(tweet['entities']['user_mentions']) > 0:
-            tweet['TWEET_TYPE'] = 'mention'
-        else:
-            tweet['TWEET_TYPE'] = 'tweet'
-        return tweet
-    else:
-        #logger.warning("Incomplete tweet: %s", tweet)
-        pass
-
-
-# extract relevant data to write to CSV
-def extract_content(tweet):
-    
-    content = [tweet['user']['screen_name'], 
-               tweet['CREATED_AT'].strftime('%Y-%m-%d %H:%M:%S'),
-               tweet['TWEET_TYPE'],
-               tweet['text'].encode('unicode_escape')]
-    
-    return content    
 
 
 def start_stream():
