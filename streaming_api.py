@@ -7,6 +7,7 @@ import tweepy
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
+import psycopg2
 
 
 # enable logging
@@ -16,6 +17,14 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# connect to the tweets database
+conn = psycopg2.connect(database="postgres",
+                        user="postgres",
+                        password="apassword",
+                        host="localhost")
+
+# define the cursor to be able to write to the database
+cur = conn.cursor()
 
 # authorize the app to access Twitter on our behalf
 auth = OAuthHandler(oauth.consumer_key, oauth.consumer_secret)
@@ -28,10 +37,9 @@ class MyListener(StreamListener):
 
     def on_data(self, data):
         try:
-            tweet = json.loads(data)
-            with open('tweets.json', 'a') as f:
-                json.dump(tweet, f)
-                f.write('\n')
+            if 'user' in data:
+                cur.execute("INSERT INTO twitter (tweet) VALUES (%s)", [data])
+                cur.commit()
 
         except BaseException as e:
             logger.warning(e)
