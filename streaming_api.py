@@ -39,7 +39,11 @@ class MyListener(StreamListener):
         try:
             if 'user' in data:
                 cur.execute("INSERT INTO twitter (tweet) VALUES (%s)", [data])
-                cur.commit()
+                conn.commit()
+
+            else:
+                logger.warning(data)
+                pass
 
         except BaseException as e:
             logger.warning(e)
