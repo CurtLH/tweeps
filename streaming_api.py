@@ -31,6 +31,8 @@ auth = OAuthHandler(oauth.consumer_key, oauth.consumer_secret)
 auth.set_access_token(oauth.access_token, oauth.access_secret)
 api = tweepy.API(auth)
 
+# load collection terms
+terms = list([line.lower().strip() for line in open('terms.txt')])
 
 # establish open connection to streaming API
 class MyListener(StreamListener):
@@ -38,8 +40,13 @@ class MyListener(StreamListener):
     def on_data(self, data):
         try:
             if 'user' in data:
-                cur.execute("INSERT INTO twitter (tweet) VALUES (%s)", [data])
-                conn.commit()
+
+                tweet = json.loads(data)
+                tweet['TERMS'] = [term for term in terms if term in tweet['text'].lower()]                
+
+                if len(tweet['TERMS']) > 0:
+                    cur.execute("INSERT INTO twitter2 (tweet) VALUES (%s)", [json.dumps(tweet)])
+                    conn.commit()
 
             else:
                 logger.warning(data)
@@ -56,8 +63,6 @@ class MyListener(StreamListener):
 
 
 def start_stream():
-
-    terms = list([line.strip() for line in open('terms.txt')])
 
     while True:
 
