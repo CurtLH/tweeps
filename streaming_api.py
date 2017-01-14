@@ -8,6 +8,7 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
 import psycopg2
+from datetime import datetime
 
 
 # enable logging
@@ -41,9 +42,16 @@ class MyListener(StreamListener):
         try:
             if 'user' in data:
 
+                # load tweet into a dict
                 tweet = json.loads(data)
+
+                # identify matching collection term
                 tweet['TERMS'] = [term for term in terms if term in tweet['text'].lower()]                
 
+                # identify collection datetime
+                tweet['COLLECTED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%m:%S")
+
+                # insert tweet into database
                 if len(tweet['TERMS']) > 0:
                     cur.execute("INSERT INTO twitter_raw (tweet) VALUES (%s)", [json.dumps(tweet)])
                     conn.commit()
