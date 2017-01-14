@@ -42,18 +42,22 @@ def load_data():
                                 password="apassword",
                                 host="localhost")
         conn.autocommit = True
-        logger.info("Conncted to database")
+        cur = conn.cursor()
+        logger.info("Successfully connected to the database")
 
     except:
         logger.warning("Cannot connect to database")
 
-    # define the cursor to be able to query the database
-    cur = conn.cursor()
+    
+    # query the database and store the results
+    try:
+        cur.execute("SELECT tweet FROM twitter_raw")
+        tweets = [record[0] for record in cur]
+        logger.info("Loaded %s records from twitter_raw", len(tweets)) 
 
-    # query the database and store the results in a list a list of dicts
-    cur.execute("SELECT tweet FROM twitter2")
-    tweets = [record[0] for record in cur]
-    logger.warning("%s tweets loaded from OLTP", len(tweets)) 
+    except:
+        logger.warning("Unable to query twitter_raw")
+
 
     # load transformed tweets into the database
     for line in tweets:
@@ -64,10 +68,23 @@ def load_data():
         # classify tweet by type
         classify_tweet(line)
 
-        # insert into database
-        cur.execute("INSERT INTO twitter3 (created_at, screen_name, text) VALUES (%s, %s, %s )", [line['CREATED_AT'], line['user']['screen_name'], line['text']])
+        # extract the relevant fields
+        tweet = (line['id_str'],
+                 line['CREATED_AT'],
+                 line['user']['screen_name'],
+                 line['TWEET_TYPE'],
+                 line['text'])
 
-    logger.warning("tweets successfully loaded into OLAP")
+        # insert into database
+        try:
+            cur.execute("INSERT INTO twitter (id_str, created_at, screen_name, tweet_type, text) VALUES (%s, %s, %s, %s, %s)", [item for item in tweet])
+
+        except:
+           #logger.warning("Cannot load record into twitter")
+            pass
+
+
+    logger.info("Successfully loaded records in twitter")
 
 if __name__ == "__main__":
     load_data()
