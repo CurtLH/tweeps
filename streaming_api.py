@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import click
 import logging
 import json
 import oauth_creds as oauth
@@ -88,5 +89,13 @@ def start_stream():
             logger.warning("Twitter API Connection closed")
 
 
-if __name__ == '__main__':
+@click.command()
+def cli():
+
+    """Start the Twitter Streaming API"""
+
     start_stream()
+
+
+if __name__ == '__main__':
+    cli()

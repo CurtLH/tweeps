@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import click
 import logging
 import psycopg2
 from dateutil import parser
@@ -33,7 +34,10 @@ def classify_tweet(tweet):
 
 ##### MAIN PROGRAM ####
 
-def load_data():
+@click.command()
+def cli():
+
+    """ETL process for Twitter data"""
 
     # connect to the database
     try:
@@ -87,4 +91,4 @@ def load_data():
     logger.info("Successfully loaded records in twitter")
 
 if __name__ == "__main__":
-    load_data()
+    cli()
