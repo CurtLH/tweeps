@@ -45,7 +45,7 @@ class MyListener(StreamListener):
                 tweet['TERMS'] = [term for term in terms if term in tweet['text'].lower()]                
 
                 if len(tweet['TERMS']) > 0:
-                    cur.execute("INSERT INTO twitter2 (tweet) VALUES (%s)", [json.dumps(tweet)])
+                    cur.execute("INSERT INTO twitter_raw (tweet) VALUES (%s)", [json.dumps(tweet)])
                     conn.commit()
 
             else:
