@@ -49,7 +49,7 @@ class MyListener(StreamListener):
                 tweet['TERMS'] = [term for term in terms if term in tweet['text'].lower()]                
 
                 # identify collection datetime
-                tweet['COLLECTED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%m:%S")
+                tweet['COLLECTED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 # insert tweet into database
                 if len(tweet['TERMS']) > 0:
