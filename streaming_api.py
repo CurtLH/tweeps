@@ -25,6 +25,9 @@ conn = psycopg2.connect(database="postgres",
                         password="apassword",
                         host="localhost")
 
+# enable autocommit
+conn.autocommit = True
+
 # define the cursor to be able to write to the database
 cur = conn.cursor()
 
@@ -35,6 +38,11 @@ api = tweepy.API(auth)
 
 # load collection terms
 terms = list([line.lower().strip() for line in open('terms.txt')])
+
+# create table if it doesn't exists
+cur.execute("""CREATE TABLE IF NOT EXISTS twitter 
+               (id SERIAL PRIMARY KEY NOT NULL, 
+               tweet JSONB)""")   
 
 # establish open connection to streaming API
 class MyListener(StreamListener):
@@ -55,7 +63,6 @@ class MyListener(StreamListener):
                 # insert tweet into database
                 if len(tweet['TERMS']) > 0:
                     cur.execute("INSERT INTO twitter_raw (tweet) VALUES (%s)", [json.dumps(tweet)])
-                    conn.commit()
 
             else:
                 logger.warning(data)

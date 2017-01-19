@@ -53,6 +53,16 @@ def cli():
         logger.warning("Cannot connect to database")
 
     
+    # create table if it doesn't exists 
+    cur.execute("""CREATE TABLE IF NOT EXISTS twitter ( 
+                   id SERIAL PRIMARY KEY NOT NULL,
+                   id_str VARCHAR NOT NULL UNIQUE,
+                   created_at TIMESTAMP,
+                   screen_name VARCHAR, 
+                   tweet_type VARCHAR,
+                   text VARCHAR);""")
+
+
     # query the database and store the results
     try:
         cur.execute("SELECT tweet FROM twitter_raw")
