@@ -1,35 +1,12 @@
 #!/usr/bin/env python
 
 import click
-import logging
-import psycopg2
-from dateutil import parser
-from datetime import datetime
+import tweepy_functions as tf
+from time import sleep
 
 
 # enable logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-                    datefmt="%Y-%m-%d %H:%M:%S")
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-
-def parse_datetime(datetime):
-
-    return parser.parse(datetime)
-
-
-def classify_tweet(tweet):
-
-    if 'retweeted_status' in tweet:
-        tweet['TWEET_TYPE'] = 'retweet'
-    elif len(tweet['entities']['user_mentions']) > 0:
-        tweet['TWEET_TYPE'] = 'mention'
-    else:
-        tweet['TWEET_TYPE'] = 'tweet'
-
-    return tweet
+logger = tf.enable_logger()
 
 
 ##### MAIN PROGRAM ####
@@ -41,20 +18,14 @@ def cli():
 
     # connect to the database
     try:
-        conn = psycopg2.connect(database="postgres",
-                                user="postgres",
-                                password="apassword",
-                                host="localhost")
-        conn.autocommit = True
-        cur = conn.cursor()
-        logger.info("Successfully connected to the database")
+        cur = tf.connect_to_db()
+        logger.info("Successfully connected to database")
 
     except:
         logger.warning("Cannot connect to database")
-
     
     # create table if it doesn't exists 
-    cur.execute("""CREATE TABLE IF NOT EXISTS twitter ( 
+    cur.execute("""CREATE TABLE IF NOT EXISTS twitter_1 ( 
                    id SERIAL PRIMARY KEY NOT NULL,
                    id_str VARCHAR NOT NULL UNIQUE,
                    created_at TIMESTAMP,
@@ -63,42 +34,64 @@ def cli():
                    text VARCHAR);""")
 
 
-    # query the database and store the results
-    try:
-        cur.execute("SELECT tweet FROM twitter_raw")
-        tweets = [record[0] for record in cur]
-        logger.info("Loaded %s records from twitter_raw", len(tweets)) 
+    while True:
+   
+        # check the id in the last row of the source database
+        cur.execute("SELECT MAX(id) FROM twitter_raw")
+        from_n = cur.fetchone()[0]
 
-    except:
-        logger.warning("Unable to query twitter_raw")
+        # check the id in the last row of the target database
+        cur.execute("SELECT MAX(id) FROM twitter_1")
+        to_n = cur.fetchone()[0]
 
+        # if there are no records in the target data, set equal to 0 instead of none
+        if to_n == None:
+            to_n = 0
 
-    # load transformed tweets into the database
-    for line in tweets:
+        # if the difference in the number of rows is greater than 500...
+        if from_n - to_n >= 500:
 
-        # parse datetime
-        line['CREATED_AT'] = parse_datetime(line['created_at'])  
+            # define start and end position
+            start_pos = to_n
+            end_pos = start_pos + 500
+
+            # get the first 500 records that have not been processed
+            cur.execute("SELECT tweet FROM twitter_raw WHERE id BETWEEN %s AND %s" %(start_pos + 1, end_pos))
+            tweets = [record[0] for record in cur]
+
+            # transform tweet
+            for line in tweets:
+                
+                # classify tweet type
+                line['TWEET_TYPE'] = tf.classify_tweet(line)
+
+                # transform datetime
+                line['CREATED_AT'] = tf.parse_datetime(line['created_at'])
     
-        # classify tweet by type
-        classify_tweet(line)
 
-        # extract the relevant fields
-        tweet = (line['id_str'],
-                 line['CREATED_AT'],
-                 line['user']['screen_name'],
-                 line['TWEET_TYPE'],
-                 line['text'])
+                # extract the relevant fields
+                tweet = (line['id_str'],
+                         line['CREATED_AT'],
+                         line['user']['screen_name'],
+                         line['TWEET_TYPE'],
+                         line['text'])
+    
+                # insert into database
+                try:
+                    cur.execute("INSERT INTO twitter_1 (id_str, created_at, screen_name, tweet_type, text) VALUES (%s, %s, %s, %s, %s)", [item for item in tweet])
+                    logger.info("Successfully loaded record into twitter")
+                    sleep(2)
 
-        # insert into database
-        try:
-            cur.execute("INSERT INTO twitter (id_str, created_at, screen_name, tweet_type, text) VALUES (%s, %s, %s, %s, %s)", [item for item in tweet])
+                except:
+                    logger.warning("Cannot load record into twitter")
+                    sleep(2)
+                    pass
 
-        except:
-           #logger.warning("Cannot load record into twitter")
-            pass
+        else:
 
+            # wait for a minute they try again
+            sleep(60)
 
-    logger.info("Successfully loaded records in twitter")
 
 if __name__ == "__main__":
     cli()
