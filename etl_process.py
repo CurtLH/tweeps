@@ -12,7 +12,9 @@ logger = tf.enable_logger()
 ##### MAIN PROGRAM ####
 
 @click.command()
-def cli():
+@click.option('--batch_size', type=int, default=500, 
+              help='number of tweets to load at a time (default=500)')
+def cli(batch_size):
 
     """ETL process for Twitter data"""
 
@@ -25,7 +27,7 @@ def cli():
         logger.warning("Cannot connect to database")
     
     # create table if it doesn't exists 
-    cur.execute("""CREATE TABLE IF NOT EXISTS twitter_1 ( 
+    cur.execute("""CREATE TABLE IF NOT EXISTS twitter ( 
                    id SERIAL PRIMARY KEY NOT NULL,
                    id_str VARCHAR NOT NULL UNIQUE,
                    created_at TIMESTAMP,
@@ -41,7 +43,7 @@ def cli():
         from_n = cur.fetchone()[0]
 
         # check the id in the last row of the target database
-        cur.execute("SELECT MAX(id) FROM twitter_1")
+        cur.execute("SELECT MAX(id) FROM twitter")
         to_n = cur.fetchone()[0]
 
         # if there are no records in the target data, set equal to 0 instead of none
@@ -78,14 +80,13 @@ def cli():
     
                 # insert into database
                 try:
-                    cur.execute("INSERT INTO twitter_1 (id_str, created_at, screen_name, tweet_type, text) VALUES (%s, %s, %s, %s, %s)", [item for item in tweet])
-                    logger.info("Successfully loaded record into twitter")
-                    sleep(2)
+                    cur.execute("INSERT INTO twitter (id_str, created_at, screen_name, tweet_type, text) VALUES (%s, %s, %s, %s, %s)", [item for item in tweet])
+                    #logger.info("Successfully loaded record into twitter")
+                   
 
                 except:
                     logger.warning("Cannot load record into twitter")
-                    sleep(2)
-                    pass
+                    
 
         else:
 
