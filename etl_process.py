@@ -51,13 +51,13 @@ def cli(batch_size):
             to_n = 0
 
         # if the difference in the number of rows is greater than 500...
-        if from_n - to_n >= 500:
+        if from_n - to_n >= batch_size:
 
             # define start and end position
             start_pos = to_n
-            end_pos = start_pos + 500
+            end_pos = start_pos + batch_size
 
-            # get the first 500 records that have not been processed
+            # get the first batch of records that have not been processed
             cur.execute("SELECT tweet FROM twitter_raw WHERE id BETWEEN %s AND %s" %(start_pos + 1, end_pos))
             tweets = [record[0] for record in cur]
 
@@ -85,7 +85,7 @@ def cli(batch_size):
                    
 
                 except:
-                    logger.warning("Cannot load record into twitter")
+                    logger.warning("Cannot load record into twitter - id_str: %s", line['id_str'])
                     
 
         else:
