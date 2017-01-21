@@ -33,7 +33,9 @@ def cli(batch_size):
                    created_at TIMESTAMP,
                    screen_name VARCHAR, 
                    tweet_type VARCHAR,
-                   text VARCHAR);""")
+                   text VARCHAR,
+                   hashtags VARCHAR,
+                   urls VARCHAR);""")
 
 
     while True:
@@ -70,17 +72,25 @@ def cli(batch_size):
                 # transform datetime
                 line['CREATED_AT'] = tf.parse_datetime(line['created_at'])
     
+                # extract hashtags
+                line['HASHTAGS'] = tf.extract_hashtags(line)
+
+                # extract urls
+                line['URLS'] = tf.extract_urls(line)
+
 
                 # extract the relevant fields
                 tweet = (line['id_str'],
                          line['CREATED_AT'],
                          line['user']['screen_name'],
                          line['TWEET_TYPE'],
-                         line['text'])
+                         line['text'],
+                         line['HASHTAGS'],
+                         line['URLS'])
     
                 # insert into database
                 try:
-                    cur.execute("INSERT INTO twitter (id_str, created_at, screen_name, tweet_type, text) VALUES (%s, %s, %s, %s, %s)", [item for item in tweet])
+                    cur.execute("INSERT INTO twitter (id_str, created_at, screen_name, tweet_type, text, hashtags, urls) VALUES (%s, %s, %s, %s, %s, %s, %s)", [item for item in tweet])
                     #logger.info("Successfully loaded record into twitter")
                    
 

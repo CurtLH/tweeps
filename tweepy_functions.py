@@ -42,3 +42,14 @@ def classify_tweet(tweet):
         return 'mention'
     else:
         return 'tweet'
+
+
+def extract_hashtags(tweet):
+
+    return [line['text'] for line in tweet['entities']['hashtags']]
+        
+
+        
+def extract_urls(tweet):
+
+    return [line['expanded_url'] for line in tweet['entities']['urls']]
