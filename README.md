@@ -1,4 +1,4 @@
-# Welcome to my tweeps!
+# Welcome to tweeps!
 
 Check out the [develop branch](https://github.com/CurtLH/tweeps/tree/develop)
 for the latest updates...
