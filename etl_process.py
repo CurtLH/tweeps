@@ -9,7 +9,7 @@ from time import sleep
 logger = tf.enable_logger()
 
 
-##### MAIN PROGRAM ####
+# MAIN PROGRAM
 
 @click.command()
 @click.option('--batch_size', type=int, default=500, 
