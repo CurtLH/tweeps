@@ -7,3 +7,4 @@ dependencies:
   - ipython
   - click
   - psycopg2
+  - tweepy
