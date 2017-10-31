@@ -1,0 +1,9 @@
+name: tweeps-dev
+channels:
+  - conda-forge
+dependencies:
+  - python=2.7
+  - pytest
+  - ipython
+  - click
+  - psycopg2
