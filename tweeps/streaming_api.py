@@ -3,7 +3,6 @@
 import click
 import logging
 import json
-import oauth_creds as oauth
 import tweepy
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -31,16 +30,20 @@ conn.autocommit = True
 # define the cursor to be able to write to the database
 cur = conn.cursor()
 
+# read in api tokens
+with open('/home/curtis/etc/twitter') as f:
+    token = json.load(f)
+
 # authorize the app to access Twitter on our behalf
-auth = OAuthHandler(oauth.consumer_key, oauth.consumer_secret)
-auth.set_access_token(oauth.access_token, oauth.access_secret)
+auth = OAuthHandler(token['consumer_key'], token['consumer_secret'])
+auth.set_access_token(token['access_token'], token['access_token_secret'])
 api = tweepy.API(auth)
 
 # load collection terms
-terms = list([line.lower().strip() for line in open('terms.txt')])
+terms = list([line.lower().strip() for line in open('./tweeps/terms.txt')])
 
 # create table if it doesn't exists
-cur.execute("""CREATE TABLE IF NOT EXISTS twitter 
+cur.execute("""CREATE TABLE IF NOT EXISTS twitter_raw 
                (id SERIAL PRIMARY KEY NOT NULL, 
                tweet JSONB)""")   
 
