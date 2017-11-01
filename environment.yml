@@ -8,3 +8,4 @@ dependencies:
   - click
   - psycopg2
   - tweepy
+  - dateutil

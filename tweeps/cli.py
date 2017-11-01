@@ -11,5 +11,5 @@ def cli():
 
     pass
 
-cli.add.commands(streaming_api.cli, 'api')
-cli.add_commands(etl_process.cli, 'etl') 
+cli.add_command(streaming_api.cli, 'api')
+cli.add_command(etl_process.cli, 'etl') 
