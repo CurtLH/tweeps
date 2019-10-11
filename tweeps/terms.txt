@@ -1,4 +1,2 @@
 #wdayrising
 wdayrising
-wday
-workday
