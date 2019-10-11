@@ -19,9 +19,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # connect to the tweets database
-conn = psycopg2.connect(database="postgres",
-                        user="postgres",
-                        password="apassword",
+conn = psycopg2.connect(database="twitter",
+                        user="curtis",
                         host="localhost")
 
 # enable autocommit
@@ -42,11 +41,6 @@ api = tweepy.API(auth)
 # load collection terms
 terms = list([line.lower().strip() for line in open('./tweeps/terms.txt')])
 
-# create table if it doesn't exists
-cur.execute("""CREATE TABLE IF NOT EXISTS twitter_raw 
-               (id SERIAL PRIMARY KEY NOT NULL, 
-               tweet JSONB)""")   
-
 # establish open connection to streaming API
 class MyListener(StreamListener):
 
@@ -61,11 +55,11 @@ class MyListener(StreamListener):
                 tweet['TERMS'] = [term for term in terms if term in tweet['text'].lower()]                
 
                 # identify collection datetime
-                tweet['COLLECTED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                #tweet['COLLECTED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 # insert tweet into database
                 if len(tweet['TERMS']) > 0:
-                    cur.execute("INSERT INTO twitter_raw (tweet) VALUES (%s)", [json.dumps(tweet)])
+                    cur.execute("INSERT INTO tweets_raw (tweet) VALUES (%s)", [json.dumps(tweet)])
 
             else:
                 logger.warning(data)

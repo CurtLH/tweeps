@@ -2,7 +2,7 @@ name: tweeps-dev
 channels:
   - conda-forge
 dependencies:
-  - python=2.7
+  - python=3.7
   - pytest
   - pep8
   - autopep8
@@ -10,4 +10,3 @@ dependencies:
   - click
   - psycopg2
   - tweepy
-  - dateutil
