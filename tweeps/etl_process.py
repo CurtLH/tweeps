@@ -27,7 +27,7 @@ def cli(batch_size):
         logger.warning("Cannot connect to database")
     
     # create table if it doesn't exists 
-    cur.execute("""CREATE TABLE IF NOT EXISTS twitter ( 
+    cur.execute("""CREATE TABLE IF NOT EXISTS tweets ( 
                    id SERIAL PRIMARY KEY NOT NULL,
                    id_str VARCHAR NOT NULL UNIQUE,
                    created_at TIMESTAMP,
@@ -41,11 +41,11 @@ def cli(batch_size):
     while True:
    
         # check the id in the last row of the source database
-        cur.execute("SELECT MAX(id) FROM twitter_raw")
+        cur.execute("SELECT MAX(id) FROM tweets_raw")
         from_n = cur.fetchone()[0]
 
         # check the id in the last row of the target database
-        cur.execute("SELECT MAX(id) FROM twitter")
+        cur.execute("SELECT MAX(id) FROM tweets")
         to_n = cur.fetchone()[0]
 
         # if there are no records in the target data, set equal to 0 instead of none
@@ -60,7 +60,7 @@ def cli(batch_size):
             end_pos = start_pos + batch_size
 
             # get the first batch of records that have not been processed
-            cur.execute("SELECT tweet FROM twitter_raw WHERE id BETWEEN %s AND %s" %(start_pos + 1, end_pos))
+            cur.execute("SELECT tweet FROM tweets_raw WHERE id BETWEEN %s AND %s" %(start_pos + 1, end_pos))
             tweets = [record[0] for record in cur]
 
             # transform tweet
@@ -90,8 +90,8 @@ def cli(batch_size):
     
                 # insert into database
                 try:
-                    cur.execute("INSERT INTO twitter (id_str, created_at, screen_name, tweet_type, text, hashtags, urls) VALUES (%s, %s, %s, %s, %s, %s, %s)", [item for item in tweet])
-                    #logger.info("Successfully loaded record into twitter")
+                    cur.execute("INSERT INTO tweets (id_str, created_at, screen_name, tweet_type, text, hashtags, urls) VALUES (%s, %s, %s, %s, %s, %s, %s)", [item for item in tweet])
+                    logger.info("Successfully loaded record into twitter")
                    
 
                 except:
