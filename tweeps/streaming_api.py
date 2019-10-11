@@ -60,6 +60,7 @@ class MyListener(StreamListener):
                 # insert tweet into database
                 if len(tweet['TERMS']) > 0:
                     cur.execute("INSERT INTO tweets_raw (tweet) VALUES (%s)", [json.dumps(tweet)])
+                    logger.warning("New tweet collected")
 
             else:
                 logger.warning(data)
