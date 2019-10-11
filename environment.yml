@@ -10,3 +10,5 @@ dependencies:
   - click
   - psycopg2
   - tweepy
+  - python-dateutil
+  - pandas

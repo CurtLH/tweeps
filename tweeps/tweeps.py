@@ -17,11 +17,10 @@ def enable_logger():
     return logger
 
 
-def connect_to_db(database="postgres", user="postgres", password="apassword", host="localhost"):
+def connect_to_db(database="twitter", user="curtis", host="localhost"):
 
     conn = psycopg2.connect(database=database,
                             user=user,
-                            password=password,
                             host=host)
     conn.autocommit = True
     cur = conn.cursor()

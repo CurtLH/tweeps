@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import click
-import tweepy_functions as tf
+import tweeps as tf
 from time import sleep
 
 
