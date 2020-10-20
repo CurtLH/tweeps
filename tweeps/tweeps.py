@@ -8,9 +8,11 @@ from datetime import datetime
 
 def enable_logger():
 
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-                        datefmt="%Y-%m-%d %H:%M:%S")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
@@ -19,9 +21,7 @@ def enable_logger():
 
 def connect_to_db(database="twitter", user="curtis", host="localhost"):
 
-    conn = psycopg2.connect(database=database,
-                            user=user,
-                            host=host)
+    conn = psycopg2.connect(database=database, user=user, host=host)
     conn.autocommit = True
     cur = conn.cursor()
 
@@ -35,20 +35,19 @@ def parse_datetime(datetime):
 
 def classify_tweet(tweet):
 
-    if 'retweeted_status' in tweet:
-        return  'retweet'
-    elif len(tweet['entities']['user_mentions']) > 0:
-        return 'mention'
+    if "retweeted_status" in tweet:
+        return "retweet"
+    elif len(tweet["entities"]["user_mentions"]) > 0:
+        return "mention"
     else:
-        return 'tweet'
+        return "tweet"
 
 
 def extract_hashtags(tweet):
 
-    return [line['text'] for line in tweet['entities']['hashtags']]
-        
+    return [line["text"] for line in tweet["entities"]["hashtags"]]
 
-        
+
 def extract_urls(tweet):
 
-    return [line['expanded_url'] for line in tweet['entities']['urls']]
+    return [line["expanded_url"] for line in tweet["entities"]["urls"]]

@@ -12,16 +12,16 @@ from datetime import datetime
 
 
 # enable logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-                    datefmt="%Y-%m-%d %H:%M:%S")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # connect to the tweets database
-conn = psycopg2.connect(database="twitter",
-                        user="curtis",
-                        host="localhost")
+conn = psycopg2.connect(database="twitter", user="curtis", host="localhost")
 
 # enable autocommit
 conn.autocommit = True
@@ -30,36 +30,40 @@ conn.autocommit = True
 cur = conn.cursor()
 
 # read in api tokens
-with open('/home/curtis/etc/twitter') as f:
+with open("/home/curtis/etc/twitter") as f:
     token = json.load(f)
 
 # authorize the app to access Twitter on our behalf
-auth = OAuthHandler(token['consumer_key'], token['consumer_secret'])
-auth.set_access_token(token['access_token'], token['access_token_secret'])
+auth = OAuthHandler(token["consumer_key"], token["consumer_secret"])
+auth.set_access_token(token["access_token"], token["access_token_secret"])
 api = tweepy.API(auth)
 
 # load collection terms
-terms = list([line.lower().strip() for line in open('./tweeps/terms.txt')])
+terms = list([line.lower().strip() for line in open("./tweeps/terms.txt")])
 
 # establish open connection to streaming API
 class MyListener(StreamListener):
-
     def on_data(self, data):
         try:
-            if 'user' in data:
+            if "user" in data:
 
                 # load tweet into a dict
                 tweet = json.loads(data)
 
                 # identify matching collection term
-                tweet['TERMS'] = [term for term in terms if term in tweet['text'].lower()]                
+                tweet["TERMS"] = [
+                    term for term in terms if term in tweet["text"].lower()
+                ]
 
                 # identify collection datetime
-                #tweet['COLLECTED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # tweet['COLLECTED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 # insert tweet into database
-                if len(tweet['TERMS']) > 0:
-                    cur.execute("INSERT INTO tweets_raw (tweet) VALUES (%s)", [json.dumps(tweet)])
+                if len(tweet["TERMS"]) > 0:
+                    cur.execute(
+                        "INSERT INTO tweets_raw (tweet) VALUES (%s)",
+                        [json.dumps(tweet)],
+                    )
                     logger.warning("New tweet collected")
 
             else:
@@ -102,5 +106,5 @@ def cli():
     start_stream()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()
